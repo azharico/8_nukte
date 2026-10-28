@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Posture Space</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: radial-gradient(circle at top, #182848, #050812 70%);
+            color: white;
+            min-height: 100vh;
+        }
+
+        header {
+            height: 75px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 35px;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+            background: rgba(0,0,0,0.25);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .score {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .score span {
+            color: #ffd34e;
+        }
+
+        .main {
+            display: grid;
+            grid-template-columns: 1.6fr 1fr;
+            gap: 20px;
+            padding: 20px;
+            max-width: 1400px;
+            margin: auto;
+        }
+
+        .camera-box {
+            background: #080d18;
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 18px;
+            padding: 15px;
+            position: relative;
+            min-height: 600px;
+        }
+
+        .camera-title {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #9db8ff;
+        }
+
+        .camera {
+            width: 100%;
+            height: 530px;
+            object-fit: cover;
+            border-radius: 12px;
+            background: #000;
+        }
+
+        .game-panel {
+            background: rgba(7,13,28,0.95);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 18px;
+            padding: 25px;
+        }
+
+        .level-title {
+            font-size: 30px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .level-name {
+            color: #9db8ff;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .levels {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 7px;
+            margin-bottom: 25px;
+        }
+
+        .level {
+            min-height: 70px;
+            padding: 10px 5px;
+            border-radius: 10px;
+            background: #151c2d;
+            text-align: center;
+            font-size: 12px;
+            border: 1px solid #2b3650;
+        }
+
+        .level.active {
+            background: #1d3768;
+            border-color: #668cff;
+            box-shadow: 0 0 15px rgba(102,140,255,0.25);
+        }
+
+        .level.completed {
+            background: #16452f;
+            border-color: #38d996;
+        }
+
+        .space {
+            position: relative;
+            height: 230px;
+            overflow: hidden;
+            border-radius: 15px;
+            background:
+                radial-gradient(circle at 20% 20%, #ffffff 1px, transparent 2px),
+                radial-gradient(circle at 70% 60%, #ffffff 1px, transparent 2px),
+                radial-gradient(circle at 90% 25%, #ffffff 1px, transparent 2px),
+                #060a14;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .rocket {
+            position: absolute;
+            font-size: 55px;
+            left: 8%;
+            bottom: 18px;
+            transform: rotate(0deg);
+            filter: drop-shadow(0 0 12px rgba(255,255,255,0.5));
+        }
+
+        .rocket.launch {
+            animation: rocketLaunch 1.7s ease-in forwards;
+        }
+
+        @keyframes rocketLaunch {
+            0% {
+                left: 8%;
+                bottom: 18px;
+                transform: rotate(0deg) scale(1);
+            }
+            25% {
+                transform: rotate(-8deg) scale(1.05);
+            }
+            100% {
+                left: 88%;
+                bottom: 185px;
+                transform: rotate(-18deg) scale(1.15);
+            }
+        }
+
+        .flame {
+            position: absolute;
+            font-size: 25px;
+            left: 18px;
+            bottom: -8px;
+            opacity: 0;
+        }
+
+        .rocket.launch .flame {
+            opacity: 1;
+            animation: flame 0.12s infinite alternate;
+        }
+
+        @keyframes flame {
+            from { transform: scale(0.8); }
+            to { transform: scale(1.25); }
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 15px;
+            background: #20283a;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #38d996);
+            transition: width 0.15s;
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 18px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            background: #192136;
+            min-height: 58px;
+        }
+
+        .message.info { color: #a9c0ff; }
+        .message.success { color: #43e69b; border: 1px solid #287c59; }
+        .message.warning { color: #ffd34e; border: 1px solid #a7831c; }
+        .message.complete { color: #ffd34e; border: 1px solid #a7831c; }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            margin-top: 15px;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+            background: #3867d6;
+            color: white;
+        }
+
+        button:hover { background: #4d7cf0; }
+        button:disabled { opacity: 0.55; cursor: not-allowed; }
+        button.secondary { background: #202a42; }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .stat {
+            background: #11192a;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-title { color: #8995ae; font-size: 13px; }
+        .stat-value { font-size: 22px; font-weight: bold; margin-top: 5px; }
+
+        .cup-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.88);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cup {
+            text-align: center;
+            padding: 50px;
+            border-radius: 25px;
+            background: linear-gradient(145deg, #192747, #0a1020);
+            border: 1px solid #ffd34e;
+            box-shadow: 0 0 80px rgba(255,211,78,0.25);
+            max-width: 600px;
+            width: 90%;
+        }
+
+        .trophy {
+            font-size: 130px;
+            animation: trophy 1s infinite alternate;
+        }
+
+        @keyframes trophy {
+            from { transform: scale(1); }
+            to { transform: scale(1.08); }
+        }
+
+        .cup h1 { font-size: 40px; color: #ffd34e; }
+        .cup p { font-size: 20px; color: #dce3f4; }
+
+        @media(max-width: 900px) {
+            .main { grid-template-columns: 1fr; }
+            .camera { height: 450px; }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">🚀 POSTURE SPACE</div>
+    <div class="score">Ұпай: <span id="score">0</span> / 300</div>
+</header>
+
+<div class="main">
+    <div class="camera-box">
+        <div class="camera-title">📷 Камера — дене қалпын бақылау</div>
+        <img id="camera" class="camera" src="" alt="Camera">
+    </div>
+
+    <div class="game-panel">
+        <div class="level-title"><span id="levelNumber">1</span>-кезең</div>
+        <div id="levelName" class="level-name">Түзу тұру</div>
+
+        <!-- 3 КЕЗЕҢ -->
+        <div class="levels">
+            <div id="level1" class="level active">
+                <b>1</b><br>Түзу тұру<br>+100
+            </div>
+            <div id="level2" class="level">
+                <b>2</b><br>Қол бас<br>деңгейінде<br>+100
+            </div>
+            <div id="level3" class="level">
+                <b>3</b><br>Екі қол<br>жоғары<br>+100
+            </div>
+        </div>
+
+        <div class="space">
+            <div id="rocket" class="rocket">
+                🚀
+                <div class="flame">🔥</div>
+            </div>
+        </div>
+
+        <div>
+            Дұрыс орындау прогресі (3 сек)
+            <div class="progress-container">
+                <div id="progress" class="progress"></div>
+            </div>
+        </div>
+
+        <div id="message" class="message info">Бастау батырмасын басыңыз</div>
+
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-title">Маңызды нүктелер</div>
+                <div id="points" class="stat-value">0 / 2</div>
+            </div>
+            <div class="stat">
+                <div class="stat-title">Иық айырмасы</div>
+                <div id="shoulder" class="stat-value">0</div>
+            </div>
+            <div class="stat">
+                <div class="stat-title">Кезең ұпайы</div>
+                <div id="levelScore" class="stat-value">0 / 100</div>
+            </div>
+            <div class="stat">
+                <div class="stat-title">Жалпы ұпай</div>
+                <div id="totalScore" class="stat-value">0 / 300</div>
+            </div>
+        </div>
+
+        <button id="startButton" onclick="startGame()">🚀 ЖАТТЫҒУДЫ БАСТАУ</button>
+        <button class="secondary" onclick="resetGame()">ҚАЙТА БАСТАУ</button>
+    </div>
+</div>
+
+<div id="cupOverlay" class="cup-overlay">
+    <div class="cup">
+        <div class="trophy">🏆</div>
+        <h1>ЖАРАЙСЫҢ!</h1>
+        <p>Барлық 3 кезең дұрыс орындалды!</p>
+        <p>Әр кезең: <strong>100 ұпай</strong></p>
+        <p>Жалпы ұпай: <strong id="finalScore">300</strong> / 300</p>
+        <button onclick="resetGame()">ҚАЙТА ОЙНАУ</button>
+    </div>
+</div>
+
+<script>
+    const levelNames = {
+        1: "Түзу тұру",
+        2: "Қолды бас деңгейінде ұстау",
+        3: "Екі қолды жоғары көтеру"
+    };
+
+    let lastRocketLaunchId = 0;
+    let rocketTimer = null;
+
+    async function updateState() {
+        try {
+            const response = await fetch("/state");
+            const data = await response.json();
+
+            document.getElementById("camera").src = data.camera_image;
+            document.getElementById("score").innerText = data.score;
+            document.getElementById("totalScore").innerText = data.score + " / 300";
+
+            document.getElementById("levelNumber").innerText = data.level;
+            document.getElementById("levelName").innerText = levelNames[data.level] || "";
+
+            document.getElementById("points").innerText = data.points_visible + " / " + data.required_points_count;
+            document.getElementById("shoulder").innerText = data.shoulder_difference;
+            document.getElementById("levelScore").innerText = data.level_score + " / 100";
+            document.getElementById("progress").style.width = data.progress + "%";
+
+            for (let i = 1; i <= 3; i++) {
+                const element = document.getElementById("level" + i);
+                element.classList.remove("active", "completed");
+
+                if (i < data.level) {
+                    element.classList.add("completed");
+                }
+                if (i === data.level) {
+                    element.classList.add("active");
+                }
+            }
+
+            const message = document.getElementById("message");
+            message.innerText = data.message;
+            message.className = "message " + getMessageClass(data.message_type);
+
+            if (data.rocket_launch_id !== lastRocketLaunchId) {
+                lastRocketLaunchId = data.rocket_launch_id;
+                launchRocket();
+            }
+
+            const startButton = document.getElementById("startButton");
+            if (data.level > 1) {
+                startButton.style.display = "none";
+            } else {
+                startButton.style.display = "block";
+                if (data.started) {
+                    startButton.disabled = true;
+                    startButton.innerText = "ЖАТТЫҒУ ЖҮРІП ЖАТЫР...";
+                } else {
+                    startButton.disabled = false;
+                    if (data.game_complete) {
+                        startButton.style.display = "none";
+                    } else {
+                        startButton.innerText = "🚀 ЖАТТЫҒУДЫ БАСТАУ";
+                    }
+                }
+            }
+
+            if (data.game_complete) {
+                document.getElementById("cupOverlay").style.display = "flex";
+                document.getElementById("finalScore").innerText = data.score;
+            }
+
+        } catch (error) {
+            console.log("State error:", error);
+        }
+    }
+
+    function getMessageClass(type) {
+        if (type === "success") return "success";
+        if (type === "warning") return "warning";
+        if (type === "level-complete" || type === "game-complete") return "complete";
+        return "info";
+    }
+
+    function launchRocket() {
+        const rocket = document.getElementById("rocket");
+        rocket.classList.remove("launch");
+        void rocket.offsetWidth;
+        rocket.classList.add("launch");
+
+        if (rocketTimer) clearTimeout(rocketTimer);
+        rocketTimer = setTimeout(() => {
+            rocket.classList.remove("launch");
+        }, 1800);
+    }
+
+    async function startGame() {
+        await fetch("/start", { method: "POST" });
+    }
+
+    async function resetGame() {
+        document.getElementById("cupOverlay").style.display = "none";
+        const rocket = document.getElementById("rocket");
+        rocket.classList.remove("launch");
+        lastRocketLaunchId = 0;
+        await fetch("/reset", { method: "POST" });
+    }
+
+    setInterval(updateState, 100);
+    updateState();
+</script>
+
+</body>
+</html>
